@@ -11,7 +11,7 @@ public interface NetworkService {
 	
 	String addDevice(String name, String type);
 
-	String modifyStrength(String deviceName, int strength);
+	String modifyStrength(String deviceName, int strength,boolean flag);
 	
 	String connectDevice(String source, List<String> targetList);
 	

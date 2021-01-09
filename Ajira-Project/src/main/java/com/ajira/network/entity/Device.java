@@ -4,7 +4,7 @@ public class Device {
 	
 	private String name;
 	private DeviceTypes type;
-	private  int  strength = 10;
+	private  int  strength = 5;
 	
 	public Device(String name, DeviceTypes type)
 	{

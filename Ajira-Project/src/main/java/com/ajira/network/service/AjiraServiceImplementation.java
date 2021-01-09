@@ -12,13 +12,13 @@ import com.ajira.network.entity.Device;
 import com.ajira.network.entity.DeviceTypes;
 
 @Service
-public class AjiraServiceImplementation implements NetworkService {
-
+public class AjiraServiceImplementation implements NetworkService {	
+	
 private Map<String, Device> deviceList = new HashMap<>();
 
 private Map<String, ArrayList<Device>> connectedNodes = new HashMap<>();
 
-Stack<String> routePath = new Stack<String>();
+Stack<String> routePath = new Stack<String>(); 
 
 String path ="";
 
@@ -40,14 +40,21 @@ public String addDevice(String name, String type) {
 
 }
 
-public String modifyStrength(String deviceName, int strength) {
-	if (!deviceList.containsKey(deviceName)) {
+public String modifyStrength(String deviceName, int strength, boolean flag) {
+	Device d = deviceList.get(deviceName);
+	if(strength < 0)
+		return "Strength is negative";
+	
+	else if (!deviceList.containsKey(deviceName)) {
 		return "Device not found";
+	}
+	
+	else if(d.getType().toString().equals("REPEATER") && !flag) {
+		d.setStrength(strength);
+	  return "Strength cannot be defined for Repeater";
 	}
 
 	else {
-
-		Device d = deviceList.get(deviceName);
 		d.setStrength(strength);
 		return "Successfully defined strength";
 	}
@@ -71,22 +78,22 @@ public String connectDevice(String source, List<String> targetList) {
 	}
 	else {
 		List<Device> targetDeviceList = new ArrayList<>();
-
+		
 		for(int i=0;i<targetList.size();i++)
 		{
 			targetDeviceList.add(deviceList.get(targetList.get(i)));
 		}
-
+		
 		ArrayList<Device> connectedDeviceList = connectedNodes.getOrDefault(source, new ArrayList<>());
 		connectedDeviceList.addAll(targetDeviceList);
 		connectedNodes.put(source, connectedDeviceList);
-
+		
 		for(int i=0;i<targetDeviceList.size();i++)
 		{
 			connectedDeviceList = connectedNodes.getOrDefault(targetDeviceList.get(i).getName(), new ArrayList<>());
 			connectedDeviceList.add(deviceList.get(source));
 			connectedNodes.put(targetDeviceList.get(i).getName(), connectedDeviceList);
-
+			
 		}
 		 return "Successfully connected";
 	}
@@ -96,7 +103,7 @@ public String connectDevice(String source, List<String> targetList) {
 
 void printRoutePath()
 {
-
+	
 	for(int i=0;i<routePath.size()-1;i++)
 	{
 		path+=routePath.get(i)+" -> ";
@@ -105,22 +112,29 @@ void printRoutePath()
 }
 
 void DFSUtil(String s, String t, Map<String, Boolean> visited, int sourceStrength) {
-
+	
 	   if(sourceStrength <= 0)
 		   	return;
-
+	   
 		routePath.push(s);
 		visited.put(s, true);
-		System.out.println("sourceStrength -- "+sourceStrength);
+		Device d = deviceList.get(s);
+		
+		//System.out.println("initial sourceStrength -- "+d.getStrength());
+		
+		if(d.getType().toString().equals("REPEATER"))
+			modifyStrength(d.getName(),d.getStrength()*2,true);
+			
+		//System.out.println("final sourceStrength -- "+d.getStrength());
 
 		if (s.equals(t)) {
 			// found the ans
 			printRoutePath();
 			return;
 		}
-
+		
 			ArrayList<Device> x = connectedNodes.get(s);
-
+			
 			if(x!=null )
 			{
 				for (int i = 0; i < x.size(); i++) {
@@ -130,19 +144,19 @@ void DFSUtil(String s, String t, Map<String, Boolean> visited, int sourceStrengt
 						 printRoutePath();
 						 return;
 					}
-
+						
 				}
-
+				
 				for (int i = 0; i < x.size(); i++) {
 					if (!visited.get(x.get(i).getName()) && sourceStrength > 0)
 						DFSUtil(x.get(i).getName(), t, visited, sourceStrength-1);
 				}
-
+				
 			}
-
+			
 			routePath.pop();
-
-
+			
+	
 }
 
 void DFS(String s, String t) {
@@ -166,10 +180,10 @@ public String routeInfo(String s, String t) {
 		return "Invalid Request";
 	}
 	boolean RepeaterFound = false;
-
+	
 	if(deviceList.get(s).getType().toString().equals("REPEATER") || deviceList.get(t).getType().toString().equals("REPEATER"))
 		RepeaterFound = true;
-
+	
 	if (RepeaterFound) {
 		return "Route cannot be calculated with repeater";
 	}

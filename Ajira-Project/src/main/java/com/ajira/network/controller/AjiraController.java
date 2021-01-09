@@ -21,7 +21,7 @@ public class AjiraController {
 	@GetMapping("/devices")
 	public String fetchDeviceList() {
 		return networkService.listDevices();
-	}
+	}  
 
 	@PostMapping("/createDevices")
 	public JSONObject createDeviceList(@RequestBody JSONObject deviceDetail){
@@ -33,7 +33,7 @@ public class AjiraController {
 
 	@PostMapping("/modify")
 	public JSONObject modifyStrength(@RequestBody JSONObject modifyStrength) {
-		String msg = networkService.modifyStrength(modifyStrength.get("deviceName").toString(),Integer.parseInt(modifyStrength.get("strength").toString()));
+		String msg = networkService.modifyStrength(modifyStrength.get("deviceName").toString(),Integer.parseInt(modifyStrength.get("strength").toString()), false);
 		JSONObject obj = new JSONObject();
 		obj.put("msg", msg);
 		return obj;
